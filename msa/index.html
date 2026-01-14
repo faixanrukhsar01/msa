@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Masjid Prayer Timings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <h2 id="masjid-name">IUST Masjid</h2>
+
+  <p class="label">Today's Hijri Date</p>
+  <h3 id="hijri-date">--</h3>
+
+  <p class="label">Current Time</p>
+  <h3 id="current-time">--</h3>
+
+  <div id="next-prayer" class="box">--</div>
+  <div id="next-iqamah" class="box blue">--</div>
+
+  <div class="ramadan">
+    Sehri End: <span id="sehri">--</span> |
+    Iftaar: <span id="iftaar">--</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Prayer</th>
+        <th>Azan</th>
+        <th>Iqamah</th>
+      </tr>
+    </thead>
+    <tbody id="prayer-table"></tbody>
+  </table>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
