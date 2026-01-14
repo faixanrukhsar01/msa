@@ -64,7 +64,7 @@ fetch(SHEET_URL)
       return;
     }
 
-    document.getElementById("masjid-name").innerText = "Masjid";
+    document.getElementById("masjid-name").innerText = "IUST-Masjid";
 
     document.getElementById("sehri").innerText = row[11];
     document.getElementById("iftaar").innerText = row[12];
@@ -134,3 +134,4 @@ fetch(SHEET_URL)
     setInterval(updateCountdown, 1000);
     updateCountdown();
   });
+
