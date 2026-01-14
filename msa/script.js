@@ -10,15 +10,28 @@ function updateTime() {
 setInterval(updateTime, 1000);
 updateTime();
 
-/* ================= HIJRI DATE ================= */
-function getHijriDate() {
-  const d = new Date();
-  return new Intl.DateTimeFormat(
-    "en-TN-u-ca-islamic",
-    { day: "numeric", month: "long", year: "numeric" }
-  ).format(d);
+/* ================= HIJRI DATE (FIXED, PHONE-SAFE) ================= */
+function loadHijriDate() {
+  const today = new Date();
+  const d = today.getDate();
+  const m = today.getMonth() + 1;
+  const y = today.getFullYear();
+
+  fetch(`https://api.aladhan.com/v1/gToH/${d}-${m}-${y}`)
+    .then(res => res.json())
+    .then(data => {
+      const h = data.data.hijri;
+      document.getElementById("hijri-date").innerText =
+        `${h.day} ${h.month.en}, ${h.year} AH`;
+    })
+    .catch(() => {
+      document.getElementById("hijri-date").innerText = "--";
+    });
 }
-document.getElementById("hijri-date").innerText = getHijriDate();
+
+/* call once on page load */
+loadHijriDate();
+
 
 /* ================= HELPERS ================= */
 function toDate24(timeStr) {
