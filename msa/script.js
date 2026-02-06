@@ -83,7 +83,8 @@ fetch(SHEET_URL)
       { name: "Zuhr", azan: row[3], iqamah: row[4] },
       { name: "Asr", azan: row[5], iqamah: row[6] },
       { name: "Maghrib", azan: row[7], iqamah: row[8] },
-      { name: "Isha", azan: row[9], iqamah: row[10] }
+      { name: "Isha", azan: row[9], iqamah: row[10] },
+      { name: "Jummah", azan: row[11], iqamah: row[12] }
     ];
 
     /* ===== TABLE RENDER ===== */
