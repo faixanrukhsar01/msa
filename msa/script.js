@@ -46,7 +46,7 @@ function formatRemaining(ms) {
   return `${h}h ${m}m ${sec}s`;
 }
 
-/* ================= CURRENT TIME (FORCED 12H) ================= */
+/* ================= CURRENT TIME ================= */
 function updateTime() {
   const now = new Date();
   document.getElementById("current-time").innerText =
@@ -89,10 +89,7 @@ Promise.all([
     .split(/\r?\n/)
     .map(r => r.split(",").map(c => c.trim()));
 
-  // Remove header row
   const dataRows = rows.slice(1);
-
-  // Sort by date descending → get latest available
   dataRows.sort((a, b) => new Date(b[0]) - new Date(a[0]));
   const row = dataRows[0];
 
@@ -106,22 +103,18 @@ Promise.all([
 
   const timings = apiData.data.timings;
 
-  const fajrAzanAPI = timings.Fajr.split(" ")[0];
-  const maghribAzanAPI = timings.Maghrib.split(" ")[0];
-  const maghribIqamahCalculated = addMinutes(maghribAzanAPI, 5);
+  const fajrAzan = timings.Fajr.split(" ")[0];
+  const maghribAzan = timings.Maghrib.split(" ")[0];
+  const maghribIqamah = addMinutes(maghribAzan, 5);
 
-  // Sehri & Iftaar
-  document.getElementById("sehri").innerText =
-    to12Hour(fajrAzanAPI);
-
-  document.getElementById("iftaar").innerText =
-    to12Hour(maghribAzanAPI);
+  document.getElementById("sehri").innerText = to12Hour(fajrAzan);
+  document.getElementById("iftaar").innerText = to12Hour(maghribAzan);
 
   const prayers = [
-    { name: "Fajr", azan: fajrAzanAPI, iqamah: row[2] },
+    { name: "Fajr", azan: fajrAzan, iqamah: row[2] },
     { name: "Zuhr", azan: row[3], iqamah: row[4] },
     { name: "Asr", azan: row[5], iqamah: row[6] },
-    { name: "Maghrib", azan: maghribAzanAPI, iqamah: maghribIqamahCalculated },
+    { name: "Maghrib", azan: maghribAzan, iqamah: maghribIqamah },
     { name: "Isha", azan: row[9], iqamah: row[10] }
   ];
 
@@ -140,28 +133,44 @@ Promise.all([
 
   function updateCountdown() {
     const now = new Date();
-    let nextA = null;
-    let nextName = "";
-    let nextIndex = -1;
+    let activeIndex = -1;
 
-    prayers.forEach((p, i) => {
-      const az = toDate24(p.azan);
-      if (az && az > now && (!nextA || az < nextA)) {
-        nextA = az;
-        nextName = p.name;
-        nextIndex = i;
+    for (let i = 0; i < prayers.length; i++) {
+      const az = toDate24(prayers[i].azan);
+      const iq = toDate24(prayers[i].iqamah);
+      if (!az || !iq) continue;
+
+      // BEFORE AZAN
+      if (now < az) {
+        activeIndex = i;
+
+        document.getElementById("next-prayer").innerText =
+          `Next Azan (${prayers[i].name}) in ${formatRemaining(az - now)}`;
+
+        document.getElementById("next-iqamah").innerText =
+          `Next Iqamah in ${formatRemaining(iq - now)}`;
+        break;
       }
-    });
 
-    if (nextIndex === -1) nextIndex = 0;
+      // BETWEEN AZAN & IQAMAH
+      if (now >= az && now < iq) {
+        activeIndex = i;
 
-    document.getElementById("next-prayer").innerText =
-      nextA
-        ? `Next Azan (${nextName}) in ${formatRemaining(nextA - now)}`
-        : "--";
+        document.getElementById("next-prayer").innerText = "--";
+
+        document.getElementById("next-iqamah").innerText =
+          `Iqamah in ${formatRemaining(iq - now)}`;
+        break;
+      }
+    }
+
+    if (activeIndex === -1) {
+      document.getElementById("next-prayer").innerText = "--";
+      document.getElementById("next-iqamah").innerText = "--";
+    }
 
     document.querySelectorAll("#prayer-table tr").forEach((tr, i) => {
-      tr.classList.toggle("current-prayer", i === nextIndex);
+      tr.classList.toggle("current-prayer", i === activeIndex);
     });
   }
 
