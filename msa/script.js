@@ -68,7 +68,7 @@ function loadHijriDate() {
 }
 loadHijriDate();
 
-/* ================= LOAD EVERYTHING ================= */
+/* ================= LOAD DATA ================= */
 Promise.all([
   fetch(SHEET_URL).then(res => res.text()),
   fetch(`https://api.aladhan.com/v1/timings/${new Date().getDate()}-${new Date().getMonth()+1}-${new Date().getFullYear()}?latitude=${UNIVERSITY_LAT}&longitude=${UNIVERSITY_LON}&method=1`)
@@ -81,12 +81,12 @@ Promise.all([
     .split(/\r?\n/)
     .map(r => r.split(",").map(c => c.trim()));
 
-  const today = new Date().toISOString().split("T")[0];
-  const row = rows.find(r => r[0] === today);
+  // ✅ LATEST available date from sheet
+  const row = rows[rows.length - 1];
 
   if (!row) {
     document.getElementById("next-prayer").innerText =
-      "No timetable for today";
+      "No timetable available";
     return;
   }
 
@@ -94,14 +94,11 @@ Promise.all([
 
   const timings = apiData.data.timings;
 
-  // Replace Fajr & Maghrib from API
   const fajrAzanAPI = timings.Fajr.split(" ")[0];
   const maghribAzanAPI = timings.Maghrib.split(" ")[0];
-
-  // Maghrib Iqamah = Azan + 5 minutes
   const maghribIqamahCalculated = addMinutes(maghribAzanAPI, 5);
 
-  // Sehri & Iftaar display
+  // Sehri & Iftaar from API
   document.getElementById("sehri").innerText =
     to12Hour(fajrAzanAPI);
 
@@ -113,8 +110,7 @@ Promise.all([
     { name: "Zuhr", azan: row[3], iqamah: row[4] },
     { name: "Asr", azan: row[5], iqamah: row[6] },
     { name: "Maghrib", azan: maghribAzanAPI, iqamah: maghribIqamahCalculated },
-    { name: "Isha", azan: row[9], iqamah: row[10] },
-    { name: "Jummah", azan: row[11], iqamah: row[12] }
+    { name: "Isha", azan: row[9], iqamah: row[10] }
   ];
 
   const table = document.getElementById("prayer-table");
