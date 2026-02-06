@@ -3,24 +3,40 @@ const SHEET_ID =
   "2PACX-1vQpueWZ1bGx04P79rJ_fiXOawJzqBf0T9TTJppeeGldYqvzrUHhu_wKZe8nzcChDlYG7Q484QkAGyKz";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?output=csv`;
 
-/* ================= TIME FORMAT HELPERS ================= */
+const UNIVERSITY_LAT = 33.92638793514241;
+const UNIVERSITY_LON = 75.01850788847442;
+
+/* ================= TIME HELPERS ================= */
 function to12Hour(timeStr) {
-  if (!timeStr || timeStr === "-" || timeStr === "--") return "--";
-  const [h, m] = timeStr.split(":").map(Number);
+  if (!timeStr) return "--";
+  const clean = timeStr.split(" ")[0];
+  const [h, m] = clean.split(":").map(Number);
   const ampm = h >= 12 ? "PM" : "AM";
   const hour = h % 12 || 12;
   return `${hour}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 
-function toDate24(timeStr) {
-  if (!timeStr || timeStr === "-" || timeStr === "--") return null;
+function addMinutes(timeStr, minutesToAdd) {
   const [h, m] = timeStr.split(":").map(Number);
+  const date = new Date();
+  date.setHours(h, m + minutesToAdd, 0, 0);
+  return `${date.getHours().toString().padStart(2, "0")}:${date
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}`;
+}
+
+function toDate24(timeStr) {
+  if (!timeStr) return null;
+  const clean = timeStr.split(" ")[0];
+  const [h, m] = clean.split(":").map(Number);
   const d = new Date();
   d.setHours(h, m, 0, 0);
   return d;
 }
 
 function formatRemaining(ms) {
+  if (!ms || ms <= 0) return "--";
   const s = Math.floor(ms / 1000);
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
@@ -36,14 +52,10 @@ function updateTime() {
 setInterval(updateTime, 1000);
 updateTime();
 
-/* ================= HIJRI DATE (PHONE SAFE) ================= */
+/* ================= HIJRI DATE ================= */
 function loadHijriDate() {
   const d = new Date();
-  const day = d.getDate();
-  const month = d.getMonth() + 1;
-  const year = d.getFullYear();
-
-  fetch(`https://api.aladhan.com/v1/gToH/${day}-${month}-${year}`)
+  fetch(`https://api.aladhan.com/v1/gToH/${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`)
     .then(res => res.json())
     .then(data => {
       const h = data.data.hijri;
@@ -56,98 +68,100 @@ function loadHijriDate() {
 }
 loadHijriDate();
 
-/* ================= MAIN LOGIC ================= */
-fetch(SHEET_URL)
-  .then(res => res.text())
-  .then(csv => {
-    const rows = csv.trim().split("\n").map(r => r.split(","));
-    const today = new Date().toISOString().split("T")[0];
+/* ================= LOAD EVERYTHING ================= */
+Promise.all([
+  fetch(SHEET_URL).then(res => res.text()),
+  fetch(`https://api.aladhan.com/v1/timings/${new Date().getDate()}-${new Date().getMonth()+1}-${new Date().getFullYear()}?latitude=${UNIVERSITY_LAT}&longitude=${UNIVERSITY_LON}&method=1`)
+    .then(res => res.json())
+])
+.then(([csv, apiData]) => {
 
-    const row = rows.find(r => r[0] === today);
-    if (!row) {
-      document.getElementById("next-prayer").innerText =
-        "No timetable for today";
-      return;
-    }
+  const rows = csv
+    .trim()
+    .split(/\r?\n/)
+    .map(r => r.split(",").map(c => c.trim()));
 
-    /* ===== MASJID NAME (FIXED) ===== */
-    document.getElementById("masjid-name").innerText = "IUST Masjid";
+  const today = new Date().toISOString().split("T")[0];
+  const row = rows.find(r => r[0] === today);
 
-    /* ===== SEHRI / IFTAAR ===== */
-    document.getElementById("sehri").innerText = to12Hour(row[11]);
-    document.getElementById("iftaar").innerText = to12Hour(row[12]);
+  if (!row) {
+    document.getElementById("next-prayer").innerText =
+      "No timetable for today";
+    return;
+  }
 
-    /* ===== PRAYERS ===== */
-    const prayers = [
-      { name: "Fajr", azan: row[1], iqamah: row[2] },
-      { name: "Zuhr", azan: row[3], iqamah: row[4] },
-      { name: "Asr", azan: row[5], iqamah: row[6] },
-      { name: "Maghrib", azan: row[7], iqamah: row[8] },
-      { name: "Isha", azan: row[9], iqamah: row[10] },
-      {name: "Jummah", azan: row[13], iqamah: row[14] }
-    ];
+  document.getElementById("masjid-name").innerText = "IUST Masjid";
 
-    /* ===== TABLE RENDER ===== */
-    const table = document.getElementById("prayer-table");
-    table.innerHTML = "";
-    prayers.forEach(p => {
-      table.innerHTML += `
-        <tr>
-          <td>${p.name}</td>
-          <td>${to12Hour(p.azan)}</td>
-          <td>${to12Hour(p.iqamah)}</td>
-        </tr>
-      `;
+  const timings = apiData.data.timings;
+
+  // Replace Fajr & Maghrib from API
+  const fajrAzanAPI = timings.Fajr.split(" ")[0];
+  const maghribAzanAPI = timings.Maghrib.split(" ")[0];
+
+  // Maghrib Iqamah = Azan + 5 minutes
+  const maghribIqamahCalculated = addMinutes(maghribAzanAPI, 5);
+
+  // Sehri & Iftaar display
+  document.getElementById("sehri").innerText =
+    to12Hour(fajrAzanAPI);
+
+  document.getElementById("iftaar").innerText =
+    to12Hour(maghribAzanAPI);
+
+  const prayers = [
+    { name: "Fajr", azan: fajrAzanAPI, iqamah: row[2] },
+    { name: "Zuhr", azan: row[3], iqamah: row[4] },
+    { name: "Asr", azan: row[5], iqamah: row[6] },
+    { name: "Maghrib", azan: maghribAzanAPI, iqamah: maghribIqamahCalculated },
+    { name: "Isha", azan: row[9], iqamah: row[10] },
+    { name: "Jummah", azan: row[11], iqamah: row[12] }
+  ];
+
+  const table = document.getElementById("prayer-table");
+  table.innerHTML = "";
+
+  prayers.forEach(p => {
+    table.innerHTML += `
+      <tr>
+        <td>${p.name}</td>
+        <td>${to12Hour(p.azan)}</td>
+        <td>${to12Hour(p.iqamah)}</td>
+      </tr>
+    `;
+  });
+
+  function updateCountdown() {
+    const now = new Date();
+    let nextA = null;
+    let nextName = "";
+    let nextIndex = -1;
+
+    prayers.forEach((p, i) => {
+      const az = toDate24(p.azan);
+      if (az && az > now && (!nextA || az < nextA)) {
+        nextA = az;
+        nextName = p.name;
+        nextIndex = i;
+      }
     });
 
-    /* ===== COUNTDOWN + HIGHLIGHT ===== */
-    function updateCountdown() {
-      const now = new Date();
-      let nextA = null,
-        nextI = null,
-        nextName = "";
-      let currentIndex = -1;
+    if (nextIndex === -1) nextIndex = 0;
 
-      const azanDates = prayers.map(p => toDate24(p.azan));
+    document.getElementById("next-prayer").innerText =
+      nextA
+        ? `Next Azan (${nextName}) in ${formatRemaining(nextA - now)}`
+        : "--";
 
-      prayers.forEach((p, i) => {
-        const az = azanDates[i];
-        const nextAz = azanDates[i + 1] || null;
+    document.querySelectorAll("#prayer-table tr").forEach((tr, i) => {
+      tr.classList.toggle("current-prayer", i === nextIndex);
+    });
+  }
 
-        // CURRENT PRAYER
-        if (az && az <= now && (!nextAz || now < nextAz)) {
-          currentIndex = i;
-        }
+  setInterval(updateCountdown, 1000);
+  updateCountdown();
 
-        // NEXT AZAN
-        if (az && az > now && (!nextA || az < nextA)) {
-          nextA = az;
-          nextName = p.name;
-        }
-
-        // NEXT IQAMAH
-        const iq = toDate24(p.iqamah);
-        if (iq && iq > now && (!nextI || iq < nextI)) {
-          nextI = iq;
-        }
-      });
-
-      document.getElementById("next-prayer").innerText =
-        nextA
-          ? `Next Azan (${nextName}) in ${formatRemaining(nextA - now)}`
-          : "--";
-
-      document.getElementById("next-iqamah").innerText =
-        nextI
-          ? `Next Iqamah in ${formatRemaining(nextI - now)}`
-          : "--";
-
-      // HIGHLIGHT CURRENT PRAYER
-      document.querySelectorAll("#prayer-table tr").forEach((tr, i) => {
-        tr.classList.toggle("current-prayer", i === currentIndex);
-      });
-    }
-
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
-  });
+})
+.catch(() => {
+  document.getElementById("next-prayer").innerText =
+    "Unable to load timetable";
+});
