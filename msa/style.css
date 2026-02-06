@@ -1,72 +1,96 @@
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #e3f2fd, #f5f5f5);
+  background: linear-gradient(135deg, #f7f3eb, #e8efe6);
   margin: 0;
   padding: 0;
 }
 
+/* Container */
 .container {
   max-width: 420px;
-  margin: 20px auto;
-  background: white;
-  padding: 18px;
-  border-radius: 14px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin: 15px auto;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
+/* Title */
 h2 {
   text-align: center;
-  color: #1565c0;
-}
-
-.small {
-  text-align: center;
-  color: #777;
+  color: #1b5e20;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 h3 {
   text-align: center;
-  margin: 6px 0;
+  margin: 5px 0;
+  font-weight: 500;
 }
 
-#next-prayer, #next-iqamah {
+/* Current & Hijri */
+.small {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Next Prayer Boxes */
+#next-prayer,
+#next-iqamah {
   background: #e8f5e9;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 10px;
   text-align: center;
-  margin-top: 10px;
-  font-weight: bold;
-  color: #2e7d32;
+  margin-top: 12px;
+  font-weight: 600;
+  color: #1b5e20;
+  transition: 0.3s ease;
 }
 
+/* Ramadan Box */
 .ramadan {
-  background: #fff3e0;
-  padding: 10px;
-  border-radius: 8px;
+  background: #fff8e1;
+  padding: 12px;
+  border-radius: 10px;
   text-align: center;
-  font-weight: bold;
+  font-weight: 600;
+  margin-top: 12px;
+  color: #8d6e63;
 }
 
+/* Table */
 table {
   width: 100%;
-  margin-top: 12px;
+  margin-top: 15px;
   border-collapse: collapse;
+  font-size: 15px;
 }
 
 th {
-  background: #1976d2;
+  background: #1b5e20;
   color: white;
   padding: 10px;
-  border-radius: 4px;
   text-align: center;
 }
 
 td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
   text-align: center;
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-
 }
-tr{
-  text-align: center;
+
+/* Current Prayer Highlight */
+.current-prayer {
+  background-color: #dcedc8 !important;
+  font-weight: bold;
+}
+
+/* Responsive tightening */
+@media (max-width: 400px) {
+  .container {
+    margin: 10px;
+    padding: 16px;
+  }
 }
