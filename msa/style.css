@@ -58,10 +58,15 @@ th {
   color: white;
   padding: 10px;
   border-radius: 4px;
+  text-align: center;
 }
 
 td {
   text-align: center;
   padding: 8px;
   border-bottom: 1px solid #ddd;
+
+}
+tr{
+  text-align: center;
 }
