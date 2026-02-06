@@ -1,7 +1,9 @@
 /* ================= CONFIG ================= */
 const SHEET_ID =
   "2PACX-1vQpueWZ1bGx04P79rJ_fiXOawJzqBf0T9TTJppeeGldYqvzrUHhu_wKZe8nzcChDlYG7Q484QkAGyKz";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?output=csv`;
+
+const SHEET_URL =
+  `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/pub?output=csv`;
 
 const UNIVERSITY_LAT = 33.92638793514241;
 const UNIVERSITY_LON = 75.01850788847442;
@@ -44,10 +46,16 @@ function formatRemaining(ms) {
   return `${h}h ${m}m ${sec}s`;
 }
 
-/* ================= CURRENT TIME ================= */
+/* ================= CURRENT TIME (FORCED 12H) ================= */
 function updateTime() {
+  const now = new Date();
   document.getElementById("current-time").innerText =
-    new Date().toLocaleTimeString();
+    now.toLocaleTimeString("en-IN", {
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    });
 }
 setInterval(updateTime, 1000);
 updateTime();
@@ -81,8 +89,12 @@ Promise.all([
     .split(/\r?\n/)
     .map(r => r.split(",").map(c => c.trim()));
 
-  // ✅ LATEST available date from sheet
-  const row = rows[rows.length - 1];
+  // Remove header row
+  const dataRows = rows.slice(1);
+
+  // Sort by date descending → get latest available
+  dataRows.sort((a, b) => new Date(b[0]) - new Date(a[0]));
+  const row = dataRows[0];
 
   if (!row) {
     document.getElementById("next-prayer").innerText =
@@ -98,7 +110,7 @@ Promise.all([
   const maghribAzanAPI = timings.Maghrib.split(" ")[0];
   const maghribIqamahCalculated = addMinutes(maghribAzanAPI, 5);
 
-  // Sehri & Iftaar from API
+  // Sehri & Iftaar
   document.getElementById("sehri").innerText =
     to12Hour(fajrAzanAPI);
 
