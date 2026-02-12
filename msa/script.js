@@ -103,8 +103,13 @@ Promise.all([
 
   const timings = apiData.data.timings;
 
-  const fajrAzan = timings.Fajr.split(" ")[0];
-  const maghribAzan = timings.Maghrib.split(" ")[0];
+  // 🔹 Add 2 minutes to Sehri (Fajr)
+  const fajrAzan = addMinutes(timings.Fajr.split(" ")[0], 2);
+
+  // 🔹 Add 3 minutes to Maghrib sunset
+  const maghribAzan = addMinutes(timings.Maghrib.split(" ")[0], 3);
+
+  // 🔹 Maghrib Iqamah = adjusted Maghrib + 5 minutes
   const maghribIqamah = addMinutes(maghribAzan, 5);
 
   document.getElementById("sehri").innerText = to12Hour(fajrAzan);
