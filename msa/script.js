@@ -103,14 +103,14 @@ Promise.all([
 
   const timings = apiData.data.timings;
 
-  // 🔹 Add 2 minutes to Sehri (Fajr)
-  const fajrAzan = addMinutes(timings.Fajr.split(" ")[0], 2);
+  // ✅ Fajr +1 minute
+  const fajrAzan = addMinutes(timings.Fajr.split(" ")[0], 1);
 
-  // 🔹 Add 3 minutes to Maghrib sunset
-  const maghribAzan = addMinutes(timings.Maghrib.split(" ")[0], 3);
+  // ✅ Maghrib +2 minutes
+  const maghribAzan = addMinutes(timings.Maghrib.split(" ")[0], 2);
 
-  // 🔹 Maghrib Iqamah = adjusted Maghrib + 5 minutes
-  const maghribIqamah = addMinutes(maghribAzan, 5);
+  // Maghrib Iqamah = adjusted Maghrib + 5 minutes
+  const maghribIqamah = addMinutes(maghribAzan, 6);
 
   document.getElementById("sehri").innerText = to12Hour(fajrAzan);
   document.getElementById("iftaar").innerText = to12Hour(maghribAzan);
@@ -147,10 +147,8 @@ Promise.all([
 
       if (now < az) {
         activeIndex = i;
-
         document.getElementById("next-prayer").innerText =
           `Next Azan (${prayers[i].name}) in ${formatRemaining(az - now)}`;
-
         document.getElementById("next-iqamah").innerText =
           `Next Iqamah in ${formatRemaining(iq - now)}`;
         break;
@@ -158,9 +156,7 @@ Promise.all([
 
       if (now >= az && now < iq) {
         activeIndex = i;
-
         document.getElementById("next-prayer").innerText = "--";
-
         document.getElementById("next-iqamah").innerText =
           `Iqamah in ${formatRemaining(iq - now)}`;
         break;
