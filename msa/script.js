@@ -79,7 +79,7 @@ loadHijriDate();
 /* ================= LOAD DATA ================= */
 Promise.all([
   fetch(SHEET_URL).then(res => res.text()),
-  fetch(`https://api.aladhan.com/v1/timings/${new Date().getDate()}-${new Date().getMonth()+1}-${new Date().getFullYear()}?latitude=${UNIVERSITY_LAT}&longitude=${UNIVERSITY_LON}&method=3&school=1`)
+  fetch(`https://api.aladhan.com/v1/timings/${new Date().getDate()}-${new Date().getMonth()+1}-${new Date().getFullYear()}?latitude=${UNIVERSITY_LAT}&longitude=${UNIVERSITY_LON}&method=1&school=1`)
     .then(res => res.json())
 ])
 .then(([csv, apiData]) => {
