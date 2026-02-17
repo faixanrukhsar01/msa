@@ -115,13 +115,27 @@ Promise.all([
   document.getElementById("sehri").innerText = to12Hour(fajrAzan);
   document.getElementById("iftaar").innerText = to12Hour(maghribAzan);
 
-  const prayers = [
-    { name: "Fajr", azan: fajrAzan, iqamah: row[2] },
-    { name: "Zuhr", azan: row[3], iqamah: row[4] },
-    { name: "Asr", azan: row[5], iqamah: row[6] },
-    { name: "Maghrib", azan: maghribAzan, iqamah: maghribIqamah },
-    { name: "Isha", azan: row[9], iqamah: row[10] }
-  ];
+  const today = new Date();
+  const isFriday = today.getDay() === 5;
+
+  let prayers;
+  if (isFriday) {
+    prayers = [
+      { name: "Fajr", azan: fajrAzan, iqamah: row[2] },
+      { name: "Jummah", azan: "13:00", iqamah: "13:30" }, // fixed Jummah times
+      { name: "Asr", azan: row[5], iqamah: row[6] },
+      { name: "Maghrib", azan: maghribAzan, iqamah: maghribIqamah },
+      { name: "Isha", azan: row[9], iqamah: row[10] }
+    ];
+  } else {
+    prayers = [
+      { name: "Fajr", azan: fajrAzan, iqamah: row[2] },
+      { name: "Zuhr", azan: row[3], iqamah: row[4] },
+      { name: "Asr", azan: row[5], iqamah: row[6] },
+      { name: "Maghrib", azan: maghribAzan, iqamah: maghribIqamah },
+      { name: "Isha", azan: row[9], iqamah: row[10] }
+    ];
+  }
 
   const table = document.getElementById("prayer-table");
   table.innerHTML = "";
