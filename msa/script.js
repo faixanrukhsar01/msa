@@ -60,22 +60,6 @@ function updateTime() {
 setInterval(updateTime, 1000);
 updateTime();
 
-/* ================= HIJRI DATE ================= */
-function loadHijriDate() {
-  const d = new Date();
-  fetch(`https://api.aladhan.com/v1/gToH/${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`)
-    .then(res => res.json())
-    .then(data => {
-      const h = data.data.hijri;
-      document.getElementById("hijri-date").innerText =
-        `${h.day} ${h.month.en}, ${h.year} AH`;
-    })
-    .catch(() => {
-      document.getElementById("hijri-date").innerText = "--";
-    });
-}
-loadHijriDate();
-
 /* ================= LOAD DATA ================= */
 Promise.all([
   fetch(SHEET_URL).then(res => res.text()),
@@ -102,6 +86,11 @@ Promise.all([
   document.getElementById("masjid-name").innerText = "IUST Masjid";
 
   const timings = apiData.data.timings;
+  const hijri = apiData.data.date.hijri;
+
+  // ✅ Show Hijri date from prayer timings API
+  document.getElementById("hijri-date").innerText =
+    `${hijri.day} ${hijri.month.en}, ${hijri.year} AH`;
 
   // ✅ Fajr +1 minute
   const fajrAzan = addMinutes(timings.Fajr.split(" ")[0], 1);
@@ -109,7 +98,7 @@ Promise.all([
   // ✅ Maghrib +2 minutes
   const maghribAzan = addMinutes(timings.Maghrib.split(" ")[0], 2);
 
-  // Maghrib Iqamah = adjusted Maghrib + 5 minutes
+  // Maghrib Iqamah = adjusted Maghrib + 6 minutes
   const maghribIqamah = addMinutes(maghribAzan, 6);
 
   document.getElementById("sehri").innerText = to12Hour(fajrAzan);
