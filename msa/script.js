@@ -88,9 +88,21 @@ Promise.all([
   const timings = apiData.data.timings;
   const hijri = apiData.data.date.hijri;
 
-  // ✅ Show Hijri date from prayer timings API
+  // ✅ Adjust Hijri date based on Maghrib
+  const now = new Date();
+  const maghribTime = toDate24(timings.Maghrib.split(" ")[0]);
+  let hijriDay = parseInt(hijri.day, 10);
+
+  if (now < maghribTime) {
+    hijriDay = hijriDay - 1;
+    if (hijriDay <= 0) {
+      // fallback: just show "1" if rollover logic is complex
+      hijriDay = 1;
+    }
+  }
+
   document.getElementById("hijri-date").innerText =
-    `${hijri.day} ${hijri.month.en}, ${hijri.year} AH`;
+    `${hijriDay} ${hijri.month.en}, ${hijri.year} AH`;
 
   // ✅ Fajr +1 minute
   const fajrAzan = addMinutes(timings.Fajr.split(" ")[0], 1);
