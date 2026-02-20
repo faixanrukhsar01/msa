@@ -108,7 +108,7 @@ Promise.all([
   const fajrAzan = addMinutes(timings.Fajr.split(" ")[0], 1);
 
   // ✅ Maghrib +2 minutes
-  const maghribAzan = addMinutes(timings.Maghrib.split(" ")[0], 2);
+  const maghribAzan = addMinutes(timings.Maghrib.split(" ")[0], 3);
 
   // Maghrib Iqamah = adjusted Maghrib + 6 minutes
   const maghribIqamah = addMinutes(maghribAzan, 6);
